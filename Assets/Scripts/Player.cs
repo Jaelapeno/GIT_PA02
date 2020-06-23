@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -15,6 +17,12 @@ public class Player : MonoBehaviour
 
     private float moveSpeed = 0.05f;
 
+    public GameObject BoomBoom;
+
+    public static int score = 0;
+
+    public Text score_Txt;
+
     void Start()
     {
         thisController = GetComponent<CharacterController>();
@@ -26,8 +34,10 @@ public class Player : MonoBehaviour
     {
         if (!Jump)
         {
-            if (Input.GetKey(KeyCode.Space))
+            if (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            {
                 Jump = true;
+            }
 
             if (thisController.isGrounded)
             {
@@ -52,6 +62,24 @@ public class Player : MonoBehaviour
 
         thisController.Move(MoveDirection);
         transform.position = new Vector3(Mathf.Clamp(transform.position.x, -1.5f, 1.5f), transform.position.y, transform.position.z);
+
+        if (GameManager.Lives <= 0)
+        {
+            SceneManager.LoadScene(1);
+        }
+
+        score_Txt.text = "SCORE : " + score;
     }
 
+    public void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Obstacle")
+        {
+            var empty = Instantiate(BoomBoom, transform.position, transform.rotation);
+            GameManager.Lives--;
+            Destroy(empty, 1);
+
+            HUD.HUDManager.UpdateLives();
+        }
+    }
 }
